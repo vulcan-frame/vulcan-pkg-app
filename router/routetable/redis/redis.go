@@ -1,4 +1,4 @@
-package raw
+package redis
 
 import (
 	"context"
@@ -24,27 +24,27 @@ else
 end`)
 )
 
-type RedisCmdable interface {
+type Cmdable interface {
 	redis.Cmdable
 }
 
-var _ routetable.RouteTableData = (*RedisRouteTable)(nil)
+var _ routetable.RouteTableData = (*RouteTable)(nil)
 
-type Option func(*RedisRouteTable)
+type Option func(*RouteTable)
 
 func WithTimeout(dur time.Duration) Option {
-	return func(r *RedisRouteTable) {
+	return func(r *RouteTable) {
 		r.timeout = dur
 	}
 }
 
-type RedisRouteTable struct {
-	rdb     RedisCmdable
+type RouteTable struct {
+	rdb     Cmdable
 	timeout time.Duration
 }
 
-func NewRedisRouteTable(rdb RedisCmdable, opts ...Option) *RedisRouteTable {
-	rt := &RedisRouteTable{
+func NewRouteTable(rdb Cmdable, opts ...Option) *RouteTable {
+	rt := &RouteTable{
 		rdb:     rdb,
 		timeout: defaultTimeout,
 	}
@@ -62,7 +62,7 @@ func wrapErr(err error, operation string, args ...interface{}) error {
 	return errors.Wrapf(err, "%s %s failed %v", errPrefix, operation, args)
 }
 
-func (rt *RedisRouteTable) Set(ctx context.Context, key string, addr string, dur time.Duration) error {
+func (rt *RouteTable) Set(ctx context.Context, key string, addr string, dur time.Duration) error {
 	ctx, cancel := context.WithTimeout(ctx, rt.timeout)
 	defer cancel()
 
@@ -72,7 +72,7 @@ func (rt *RedisRouteTable) Set(ctx context.Context, key string, addr string, dur
 	return nil
 }
 
-func (rt *RedisRouteTable) GetSet(ctx context.Context, key string, addr string, dur time.Duration) (string, error) {
+func (rt *RouteTable) GetSet(ctx context.Context, key string, addr string, dur time.Duration) (string, error) {
 	ctx, cancel := context.WithTimeout(ctx, rt.timeout)
 	defer cancel()
 
@@ -100,7 +100,7 @@ func (rt *RedisRouteTable) GetSet(ctx context.Context, key string, addr string, 
 // ok - true when key was set
 // result - current value (new value when ok=true)
 // err - operation error
-func (rt *RedisRouteTable) SetNx(ctx context.Context, key string, addr string, dur time.Duration) (bool, string, error) {
+func (rt *RouteTable) SetNx(ctx context.Context, key string, addr string, dur time.Duration) (bool, string, error) {
 	ctx, cancel := context.WithTimeout(ctx, rt.timeout)
 	defer cancel()
 
@@ -142,7 +142,7 @@ func (rt *RedisRouteTable) SetNx(ctx context.Context, key string, addr string, d
 	return ok, currentValue, nil
 }
 
-func (rt *RedisRouteTable) Load(ctx context.Context, key string) (string, error) {
+func (rt *RouteTable) Load(ctx context.Context, key string) (string, error) {
 	ctx, cancel := context.WithTimeout(ctx, rt.timeout)
 	defer cancel()
 
@@ -156,7 +156,7 @@ func (rt *RedisRouteTable) Load(ctx context.Context, key string) (string, error)
 	return result, nil
 }
 
-func (rt *RedisRouteTable) LoadAndExpire(ctx context.Context, key string, dur time.Duration) (string, error) {
+func (rt *RouteTable) LoadAndExpire(ctx context.Context, key string, dur time.Duration) (string, error) {
 	ctx, cancel := context.WithTimeout(ctx, rt.timeout)
 	defer cancel()
 
@@ -167,7 +167,7 @@ func (rt *RedisRouteTable) LoadAndExpire(ctx context.Context, key string, dur ti
 	return result, nil
 }
 
-func (rt *RedisRouteTable) Del(ctx context.Context, key string) error {
+func (rt *RouteTable) Del(ctx context.Context, key string) error {
 	ctx, cancel := context.WithTimeout(ctx, rt.timeout)
 	defer cancel()
 
@@ -177,7 +177,7 @@ func (rt *RedisRouteTable) Del(ctx context.Context, key string) error {
 	return nil
 }
 
-func (rt *RedisRouteTable) DelIfSame(ctx context.Context, key string, value string) error {
+func (rt *RouteTable) DelIfSame(ctx context.Context, key string, value string) error {
 	ctx, cancel := context.WithTimeout(ctx, rt.timeout)
 	defer cancel()
 
@@ -192,7 +192,7 @@ func (rt *RedisRouteTable) DelIfSame(ctx context.Context, key string, value stri
 	return nil
 }
 
-func (rt *RedisRouteTable) Expire(ctx context.Context, key string, expiration time.Duration) error {
+func (rt *RouteTable) Expire(ctx context.Context, key string, expiration time.Duration) error {
 	ctx, cancel := context.WithTimeout(ctx, rt.timeout)
 	defer cancel()
 

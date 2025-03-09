@@ -9,7 +9,9 @@ import (
 type BalancerType string
 
 const (
+	// BalancerTypeMaster is the balancer type for master, the master balancer can add and remove the route table
 	BalancerTypeMaster BalancerType = "master"
+	// BalancerTypeReader is the balancer type for reader, the reader balancer can only read the route table
 	BalancerTypeReader BalancerType = "reader"
 )
 

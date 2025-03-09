@@ -26,8 +26,15 @@ func Init(name string) {
 	}
 }
 
-func Middleware() middleware.Middleware {
+func Server() middleware.Middleware {
 	return metrics.Server(
+		metrics.WithSeconds(_metricSeconds),
+		metrics.WithRequests(_metricRequests),
+	)
+}
+
+func Client() middleware.Middleware {
+	return metrics.Client(
 		metrics.WithSeconds(_metricSeconds),
 		metrics.WithRequests(_metricRequests),
 	)
